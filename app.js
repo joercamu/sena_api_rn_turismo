@@ -91,13 +91,13 @@ const Storage = multer.diskStorage({
 
 const upload = multer({ storage: Storage });
 
-app.post('/api/upload', upload.array('photo', 3), (req, res) => {
-  console.log('file', req.files)
-  console.log('body', req.body)
-  res.status(200).json({
-    message: 'success!',
-  })
-})
+// app.post('/api/upload', upload.array('photo', 3), (req, res) => {
+//   console.log('file', req.files)
+//   console.log('body', req.body)
+//   res.status(200).json({
+//     message: 'success!',
+//   })
+// })
 app.get('/usuarios', (req, res, next) => {
 
   if (!req.query.username || !req.query.password) {
@@ -164,7 +164,7 @@ app.get('/sitios', (req, res, next) => {
     })
     .then(data => {
       data = data.map(item => {
-        item.photo = "http://"+ req.headers.host + "/images/" +item.photo;
+        // item.photo = "http://"+ req.headers.host + "/images/" +item.photo;
         return item;
       })
       console.log(data);
