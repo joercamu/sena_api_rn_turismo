@@ -52,9 +52,9 @@ const knex = connect();
  * @param {object} visit The visit record to insert.
  * @returns {Promise}
  */
-const insertVisit = (knex, sitio) => {
-  return knex('tbsitios').insert(sitio);
-};
+// const insertVisit = (knex, sitio) => {
+//   return knex('tbsitios').insert(sitio);
+// };
 
 /**
  * Retrieve the latest 10 visit records from the database.
@@ -62,17 +62,17 @@ const insertVisit = (knex, sitio) => {
  * @param {object} knex The Knex connection object.
  * @returns {Promise}
  */
-const getVisits = async knex => {
-  const results = await knex
-    .select('timestamp', 'userIp')
-    .from('visits')
-    .orderBy('timestamp', 'desc')
-    .limit(10);
+// const getVisits = async knex => {
+//   const results = await knex
+//     .select('timestamp', 'userIp')
+//     .from('visits')
+//     .orderBy('timestamp', 'desc')
+//     .limit(10);
 
-  return results.map(
-    visit => `Time: ${visit.timestamp}, AddrHash: ${visit.userIp}`
-  );
-};
+//   return results.map(
+//     visit => `Time: ${visit.timestamp}, AddrHash: ${visit.userIp}`
+//   );
+// };
 
 let respuestaError = {
   error: true,
@@ -123,23 +123,6 @@ app.get('/usuarios', (req, res, next) => {
 
 
 });
-app.get('/sitios', (req, res, next) => {
-  knex.from('tbsitios')
-    .then((res) => {
-      return res
-    })
-    .then(data => {
-      data = data.map(item => {
-        item.photo = req.headers.host + "/" +item.photo;
-        return item;
-      })
-      console.log(data);
-      res.status(200).send({ info: data });
-    })
-    .catch(err => {
-      res.status(500).send({ err: err.sqlMessage, info: err })
-    })
-});
 app.get('/comentarios/:id_sitio', (req, res, next) => {
   knex.from('tbcomentarios').where('id_sitio', req.params.id_sitio)
     .then((res) => {
@@ -174,10 +157,26 @@ app.post('/comentarios/:id_sitio', (req, res, next) => {
       })
   }
 });
-
-app.post('/sitios', upload.array('photo', 3), (req, res, next) => {
+app.get('/sitios', (req, res, next) => {
+  knex.from('tbsitios')
+    .then((res) => {
+      return res
+    })
+    .then(data => {
+      data = data.map(item => {
+        item.photo = "http://"+ req.headers.host + "/images/" +item.photo;
+        return item;
+      })
+      console.log(data);
+      res.status(200).send({ info: data });
+    })
+    .catch(err => {
+      res.status(500).send({ err: err.sqlMessage, info: err })
+    })
+});
+app.post('/sitios', (req, res, next) => {
   console.log(req.body);
-  if (!req.body.name || !req.body.info || !req.body.rate || !req.body.coords) {
+  if (!req.body.name || !req.body.info || !req.body.photo || !req.body.rate || !req.body.coords) {
     respuestaError.mensaje = "Hacen falta parametros"
     res.send(respuestaError);
   } else {
@@ -185,7 +184,7 @@ app.post('/sitios', upload.array('photo', 3), (req, res, next) => {
       id: req.body.id,
       name: req.body.name,
       info: req.body.info,
-      photo: (req.files[0].destination + req.files[0].filename).substring(1),
+      photo: req.body.photo,
       rate: req.body.rate,
       coords: req.body.coords
     };
@@ -202,32 +201,59 @@ app.post('/sitios', upload.array('photo', 3), (req, res, next) => {
   }
 
 });
-app.get('/otro', async (req, res, next) => {
-  // Create a visit record to be stored in the database
-  const visit = {
-    timestamp: new Date(),
-    // Store a hash of the visitor's ip address
-    userIp: crypto
-      .createHash('sha256')
-      .update(req.ip)
-      .digest('hex')
-      .substr(0, 7),
-  };
-
-  try {
-    await insertVisit(knex, visit);
-
-    // Query the last 10 visits from the database.
-    const visits = await getVisits(knex);
-    res
-      .status(200)
-      .set('Content-Type', 'text/plain')
-      .send(`Last 10 visits:\n${visits.join('\n')}`)
-      .end();
-  } catch (err) {
-    next(err);
+app.post('/sitios/upload', upload.array('photo', 3), (req, res, next) => {
+  console.log(req.body);
+  if (!req.body.name || !req.body.info || !req.body.rate || !req.body.coords) {
+    respuestaError.mensaje = "Hacen falta parametros"
+    res.send(respuestaError);
+  } else {
+    const sitio = {
+      id: req.body.id,
+      name: req.body.name,
+      info: req.body.info,
+      photo: req.files[0].filename,
+      rate: req.body.rate,
+      coords: req.body.coords
+    };
+    knex('tbsitios').insert(sitio)
+      .then((res) => {
+        return res
+      })
+      .then(data => {
+        res.status(200).send({ status: 'OK' });
+      })
+      .catch(err => {
+        res.status(500).send({ err: err.sqlMessage, info: err })
+      })
   }
+
 });
+// app.get('/otro', async (req, res, next) => {
+//   // Create a visit record to be stored in the database
+//   const visit = {
+//     timestamp: new Date(),
+//     // Store a hash of the visitor's ip address
+//     userIp: crypto
+//       .createHash('sha256')
+//       .update(req.ip)
+//       .digest('hex')
+//       .substr(0, 7),
+//   };
+
+//   try {
+//     await insertVisit(knex, visit);
+
+//     // Query the last 10 visits from the database.
+//     const visits = await getVisits(knex);
+//     res
+//       .status(200)
+//       .set('Content-Type', 'text/plain')
+//       .send(`Last 10 visits:\n${visits.join('\n')}`)
+//       .end();
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
