@@ -191,75 +191,91 @@ app.post("/sitios/upload", multer.single("photo"), (req, res, next) => {
 
   blobStream.end(req.file.buffer);
 });
-app.get('/sitios/:id_sitio',(req,res,next) => {
+app.get("/sitios/:id_sitio", (req, res, next) => {
   const id_sitio = parseInt(req.params.id_sitio) || "NaN";
-  if(isNaN(id_sitio)){
+  if (isNaN(id_sitio)) {
     respuestaError.mensaje = "No es posible convertir el numero";
     respuestaError.codigo = 400;
     res.status(400).send(respuestaError);
     return;
   }
-  knex('tbsitios').where({id:id_sitio}).then(res => {return res})
-  .then(data => {
-    res.status(200).send({info:data})
-  })
-  .catch(err => {
-    respuestaError.mensaje = err.sqlMessage;
-    res.status(400).send(respuestaError)
-  })
-});
-app.delete('/sitios/:id_sitio',(req, res, next) => {
-  const id_sitio = parseInt(req.params.id_sitio) || "NaN";
-  if(isNaN(id_sitio)){
-    respuestaError.mensaje = "No es posible convertir el numero";
-    respuestaError.codigo = 400;
-    res.status(400).send(respuestaError);
-    return;
-  }
-  knex('tbsitios').where({id:id_sitio}).del().then(res => {return res})
-  .then(data => {
-    res.status(200).send({
-      status:'OK',
-      affected_rows:data
+  knex("tbsitios")
+    .where({ id: id_sitio })
+    .then(res => {
+      return res;
     })
-  })
-  .catch(err => {
-    respuestaError.mensaje = err.sqlMessage;
-    res.status(400).send(respuestaError)
-  })
+    .then(data => {
+      res.status(200).send({ info: data });
+    })
+    .catch(err => {
+      respuestaError.mensaje = err.sqlMessage;
+      res.status(400).send(respuestaError);
+    });
 });
-app.put('/sitios/:id_sitio',(req,res,next) => {
+app.delete("/sitios/:id_sitio", (req, res, next) => {
   const id_sitio = parseInt(req.params.id_sitio) || "NaN";
-  if(isNaN(id_sitio)){
+  if (isNaN(id_sitio)) {
     respuestaError.mensaje = "No es posible convertir el numero";
     respuestaError.codigo = 400;
     res.status(400).send(respuestaError);
     return;
   }
-  knex('tbsitios').where({id:id_sitio}).then(res => {return res})
-  .then(data => {
-    let sitio = data[0];
-    delete sitio.id;
-    if(req.body.name){
-      sitio.name = req.body.name;
-    }
-    if(req.body.info){
-      sitio.info = req.body.info;
-    }
-    if(req.body.rate){
-      sitio.rate = parseInt(req.body.rate) || sitio.rate;
-    }
-    knex('tbsitios').where({id:id_sitio}).update(sitio).then(res => {return res})
+  knex("tbsitios")
+    .where({ id: id_sitio })
+    .del()
+    .then(res => {
+      return res;
+    })
     .then(data => {
       res.status(200).send({
-        status:'OK',
-        affected_rows:data
+        status: "OK",
+        affected_rows: data
       });
     })
-    
-  })
-  
-})
+    .catch(err => {
+      respuestaError.mensaje = err.sqlMessage;
+      res.status(400).send(respuestaError);
+    });
+});
+app.put("/sitios/:id_sitio", (req, res, next) => {
+  const id_sitio = parseInt(req.params.id_sitio) || "NaN";
+  if (isNaN(id_sitio)) {
+    respuestaError.mensaje = "No es posible convertir el numero";
+    respuestaError.codigo = 400;
+    res.status(400).send(respuestaError);
+    return;
+  }
+  knex("tbsitios")
+    .where({ id: id_sitio })
+    .then(res => {
+      return res;
+    })
+    .then(data => {
+      let sitio = data[0];
+      delete sitio.id;
+      if (req.body.name) {
+        sitio.name = req.body.name;
+      }
+      if (req.body.info) {
+        sitio.info = req.body.info;
+      }
+      if (req.body.rate) {
+        sitio.rate = parseInt(req.body.rate) || sitio.rate;
+      }
+      knex("tbsitios")
+        .where({ id: id_sitio })
+        .update(sitio)
+        .then(res => {
+          return res;
+        })
+        .then(data => {
+          res.status(200).send({
+            status: "OK",
+            affected_rows: data
+          });
+        });
+    });
+});
 /* 
 _
 **********************************************************************************
@@ -333,6 +349,162 @@ app.post("/comentarios/:id_sitio", (req, res, next) => {
         res.status(500).send({ err: err.sqlMessage, info: err });
       });
   }
+});
+/* 
+_
+**********************************************************************************
+*API especializacionSena                                                         *  
+*Turismo                                                                          *
+**********************************************************************************
+_
+*/
+app.get("/turismo", (req, res, next) => {
+  knex
+    .from("tbturismo")
+    .then(res => {
+      return res;
+    })
+    .then(data => {
+      // data = data.map(item => {
+      //   // item.photo = "http://"+ req.headers.host + "/images/" +item.photo;
+      //   return item;
+      // });
+      // console.log(data);
+      res.status(200).send({ info: data });
+    })
+    .catch(err => {
+      res.status(500).send({ err: err.sqlMessage, info: err });
+    });
+});
+app.post("/turismo", (req, res, next) => {
+  console.log(req.body);
+  if (
+    !req.body.name ||
+    !req.body.address ||
+    !req.body.site ||
+    !req.body.email ||
+    !req.body.phone ||
+    !req.body.mobile ||
+    !req.body.type_entity
+  ) {
+    respuestaError.mensaje = "Hacen falta parametros";
+    res.send(respuestaError);
+  } else {
+    const turismo = {
+      name: req.body.name,
+      address: req.body.address,
+      site: req.body.site,
+      email: req.body.email,
+      phone: req.body.phone,
+      mobile: req.body.mobile,
+      type_entity: req.body.type_entity
+    };
+    knex("tbturismo")
+      .insert(turismo)
+      .then(res => {
+        return res;
+      })
+      .then(data => {
+        res.status(200).send({ status: "OK" });
+      })
+      .catch(err => {
+        res.status(500).send({ err: err.sqlMessage, info: err });
+      });
+  }
+});
+app.get("/turismo/:id_sitio", (req, res, next) => {
+  const id_sitio = parseInt(req.params.id_sitio) || "NaN";
+  if (isNaN(id_sitio)) {
+    respuestaError.mensaje = "No es posible convertir el numero";
+    respuestaError.codigo = 400;
+    res.status(400).send(respuestaError);
+    return;
+  }
+  knex("tbturismo")
+    .where({ id: id_sitio })
+    .then(res => {
+      return res;
+    })
+    .then(data => {
+      res.status(200).send({ info: data });
+    })
+    .catch(err => {
+      respuestaError.mensaje = err.sqlMessage;
+      res.status(400).send(respuestaError);
+    });
+});
+app.delete("/turismo/:id_sitio", (req, res, next) => {
+  const id_sitio = parseInt(req.params.id_sitio) || "NaN";
+  if (isNaN(id_sitio)) {
+    respuestaError.mensaje = "No es posible convertir el numero";
+    respuestaError.codigo = 400;
+    res.status(400).send(respuestaError);
+    return;
+  }
+  knex("tbturismo")
+    .where({ id: id_sitio })
+    .del()
+    .then(res => {
+      return res;
+    })
+    .then(data => {
+      res.status(200).send({
+        status: "OK",
+        affected_rows: data
+      });
+    })
+    .catch(err => {
+      respuestaError.mensaje = err.sqlMessage;
+      res.status(400).send(respuestaError);
+    });
+});
+app.put("/turismo/:id_sitio", (req, res, next) => {
+  const id_sitio = parseInt(req.params.id_sitio) || "NaN";
+  if (isNaN(id_sitio)) {
+    respuestaError.mensaje = "No es posible convertir el numero";
+    respuestaError.codigo = 400;
+    res.status(400).send(respuestaError);
+    return;
+  }
+  knex("tbturismo")
+    .where({ id: id_sitio })
+    .then(res => {
+      return res;
+    })
+    .then(data => {
+      let sitio = data[0];
+      delete sitio.id;
+      if (req.body.name) {
+        sitio.name = req.body.name;
+      }
+      if (req.body.address) {
+        sitio.address = req.body.address;
+      }
+      if (req.body.site) {
+        sitio.site = req.body.site;
+      }
+      if (req.body.email) {
+        sitio.email = req.body.email;
+      }
+      if (req.body.phone) {
+        sitio.phone = req.body.phone;
+      }
+      if (req.body.mobile) {
+        sitio.mobile = req.body.mobile;
+      }
+      knex("tbturismo")
+        .where({ id: id_sitio })
+        .update(sitio)
+        .then(res => {
+          return res;
+        })
+        .then(data => {
+          res.status(200).send({
+            status: "OK",
+            affected_rows: data
+          });
+        });
+    });
 });
 
 // app.get('/otro', async (req, res, next) => {
