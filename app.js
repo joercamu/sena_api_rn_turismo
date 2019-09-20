@@ -191,7 +191,75 @@ app.post("/sitios/upload", multer.single("photo"), (req, res, next) => {
 
   blobStream.end(req.file.buffer);
 });
-
+app.get('/sitios/:id_sitio',(req,res,next) => {
+  const id_sitio = parseInt(req.params.id_sitio) || "NaN";
+  if(isNaN(id_sitio)){
+    respuestaError.mensaje = "No es posible convertir el numero";
+    respuestaError.codigo = 400;
+    res.status(400).send(respuestaError);
+    return;
+  }
+  knex('tbsitios').where({id:id_sitio}).then(res => {return res})
+  .then(data => {
+    res.status(200).send({info:data})
+  })
+  .catch(err => {
+    respuestaError.mensaje = err.sqlMessage;
+    res.status(400).send(respuestaError)
+  })
+});
+app.delete('/sitios/:id_sitio',(req, res, next) => {
+  const id_sitio = parseInt(req.params.id_sitio) || "NaN";
+  if(isNaN(id_sitio)){
+    respuestaError.mensaje = "No es posible convertir el numero";
+    respuestaError.codigo = 400;
+    res.status(400).send(respuestaError);
+    return;
+  }
+  knex('tbsitios').where({id:id_sitio}).del().then(res => {return res})
+  .then(data => {
+    res.status(200).send({
+      status:'OK',
+      affected_rows:data
+    })
+  })
+  .catch(err => {
+    respuestaError.mensaje = err.sqlMessage;
+    res.status(400).send(respuestaError)
+  })
+});
+app.put('/sitios/:id_sitio',(req,res,next) => {
+  const id_sitio = parseInt(req.params.id_sitio) || "NaN";
+  if(isNaN(id_sitio)){
+    respuestaError.mensaje = "No es posible convertir el numero";
+    respuestaError.codigo = 400;
+    res.status(400).send(respuestaError);
+    return;
+  }
+  knex('tbsitios').where({id:id_sitio}).then(res => {return res})
+  .then(data => {
+    let sitio = data[0];
+    delete sitio.id;
+    if(req.body.name){
+      sitio.name = req.body.name;
+    }
+    if(req.body.info){
+      sitio.info = req.body.info;
+    }
+    if(req.body.rate){
+      sitio.rate = parseInt(req.body.rate) || sitio.rate;
+    }
+    knex('tbsitios').where({id:id_sitio}).update(sitio).then(res => {return res})
+    .then(data => {
+      res.status(200).send({
+        status:'OK',
+        affected_rows:data
+      });
+    })
+    
+  })
+  
+})
 /* 
 _
 **********************************************************************************
