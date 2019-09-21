@@ -358,9 +358,29 @@ _
 **********************************************************************************
 _
 */
-app.get("/turismo", (req, res, next) => {
+app.get("/hoteles", (req, res, next) => {
   knex
     .from("tbturismo")
+    .where({'type_entity':'hotel'})
+    .then(res => {
+      return res;
+    })
+    .then(data => {
+      // data = data.map(item => {
+      //   // item.photo = "http://"+ req.headers.host + "/images/" +item.photo;
+      //   return item;
+      // });
+      // console.log(data);
+      res.status(200).send({ info: data });
+    })
+    .catch(err => {
+      res.status(500).send({ err: err.sqlMessage, info: err });
+    });
+});
+app.get("/operadores", (req, res, next) => {
+  knex
+    .from("tbturismo")
+    .where({'type_entity':'operador'})
     .then(res => {
       return res;
     })
