@@ -354,6 +354,52 @@ app.post("/comentarios/:id_sitio", (req, res, next) => {
 _
 **********************************************************************************
 *API especializacionSena                                                         *  
+*Calificaciones                                                                     *
+**********************************************************************************
+_
+*/
+app.get("/calificaciones/:id_sitio", (req, res, next) => {
+  knex
+    .from("tbcalificaciones")
+    .where("id_sitio", req.params.id_sitio)
+    .then(res => {
+      return res;
+    })
+    .then(data => {
+      res.status(200).send({ info: data });
+    })
+    .catch(err => {
+      res.status(500).send({ err: err.sqlMessage, info: err });
+    });
+});
+app.post("/calificaciones/:id_sitio", (req, res, next) => {
+  if (!req.body.comment) {
+    respuestaError.mensaje = "Hacen falta parametros";
+    res.send(respuestaError);
+  } else {
+    const rate = {
+      id_sitio: req.params.id_sitio,
+      rate: req.body.rate,
+      user: req.body.user || "anonimo"
+    };
+    knex("tbcalificaciones")
+      .insert(rate)
+      .then(res => {
+        return res;
+      })
+      .then(data => {
+        res.status(200).send({ status: "OK" });
+      })
+      .catch(err => {
+        res.status(500).send({ err: err.sqlMessage, info: err });
+      });
+  }
+});
+
+/* 
+_
+**********************************************************************************
+*API especializacionSena                                                         *  
 *Turismo                                                                          *
 **********************************************************************************
 _
