@@ -373,7 +373,7 @@ app.get("/calificaciones/:id_sitio", (req, res, next) => {
     });
 });
 app.post("/calificaciones/:id_sitio", (req, res, next) => {
-  if (!req.body.comment) {
+  if (!req.body.rate) {
     respuestaError.mensaje = "Hacen falta parametros";
     res.send(respuestaError);
   } else {
